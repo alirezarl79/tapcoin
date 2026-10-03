@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>سکه‌زن</title>
+<style>
+  :root{
+    --bg:#0f1115; --bg2:#171a21; --card:#1e2230; --gold:#ffcb47; --gold2:#ffb020;
+    --text:#f2f2f2; --muted:#9aa0ac; --accent:#4f8cff; --green:#39d98a;
+    box-sizing:border-box;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --bg:#f4f5f8; --bg2:#ffffff; --card:#ffffff; --text:#1b1d22; --muted:#666c78;
+    }
+  }
+  :root[data-theme="dark"]{ --bg:#0f1115; --bg2:#171a21; --card:#1e2230; --text:#f2f2f2; --muted:#9aa0ac; }
+
+  *{box-sizing:border-box;}
+  html,body{height:100%;margin:0;}
+  body{
+    font-family:'Vazirmatn', Tahoma, 'Segoe UI', sans-serif;
+    background:radial-gradient(circle at 50% 0%, var(--bg2), var(--bg));
+    color:var(--text);
+    display:flex; flex-direction:column; align-items:center;
+    min-height:100%;
+    padding:16px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  h1{font-size:1.2rem; margin:8px 0 2px; font-weight:700;}
+  .sub{color:var(--muted); font-size:.85rem; margin-bottom:14px;}
+
+  .stats{
+    display:flex; gap:10px; width:100%; max-width:380px; margin-bottom:16px;
+  }
+  .stat{
+    flex:1; background:var(--card); border-radius:14px; padding:10px 12px;
+    text-align:center; box-shadow:0 2px 10px rgba(0,0,0,.15);
+  }
+  .stat .label{font-size:.72rem; color:var(--muted);}
+  .stat .value{font-size:1.1rem; font-weight:700; margin-top:2px;}
+
+  .coin-wrap{
+    position:relative; width:220px; height:220px; margin:10px 0 20px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .coin{
+    width:200px; height:200px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, var(--gold), var(--gold2) 70%, #c9890a 100%);
+    box-shadow:0 10px 30px rgba(255,180,20,.35), inset 0 -8px 16px rgba(0,0,0,.25), inset 0 6px 10px rgba(255,255,255,.4);
+    display:flex; align-items:center; justify-content:center;
+    font-size:3.2rem; font-weight:900; color:#5c3b00;
+    user-select:none; cursor:pointer;
+    transition:transform .08s ease;
+  }
+  .coin:active{ transform:scale(.92); }
+  .floaters{ position:absolute; inset:0; pointer-events:none; }
+  .floater{
+    position:absolute; font-weight:800; color:var(--gold);
+    animation:rise .9s ease-out forwards;
+    font-size:1rem;
+  }
+  @keyframes rise{
+    0%{ opacity:1; transform:translateY(0) scale(1); }
+    100%{ opacity:0; transform:translateY(-70px) scale(1.2); }
+  }
+
+  .panel{
+    width:100%; max-width:380px; background:var(--card); border-radius:16px;
+    padding:14px; box-shadow:0 2px 10px rgba(0,0,0,.15); margin-bottom:12px;
+  }
+  .panel h2{font-size:.95rem; margin:0 0 10px;}
+  .upgrade{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px 0; border-top:1px solid rgba(128,128,128,.15);
+  }
+  .upgrade:first-of-type{border-top:none;}
+  .upg-info .name{font-weight:700; font-size:.9rem;}
+  .upg-info .desc{font-size:.75rem; color:var(--muted); margin-top:2px;}
+  .buy-btn{
+    background:var(--accent); color:#fff; border:none; border-radius:10px;
+    padding:8px 14px; font-size:.85rem; font-weight:700; cursor:pointer;
+    white-space:nowrap;
+  }
+  .buy-btn:disabled{ background:#555; opacity:.5; cursor:not-allowed; }
+  .buy-btn.afford{ background:var(--green); }
+
+  .reset-btn{
+    background:none; border:1px solid rgba(128,128,128,.3); color:var(--muted);
+    border-radius:10px; padding:8px 16px; font-size:.78rem; margin-top:4px; cursor:pointer;
+  }
+  .footer-note{color:var(--muted); font-size:.7rem; margin-top:6px; text-align:center;}
+</style>
+</head>
+<body>
+
+  <h1>🪙 سکه‌زن</h1>
+  <div class="sub">رو سکه بزن، امتیاز جمع کن، ارتقا بخر</div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="label">موجودی</div>
+      <div class="value" id="balance">0</div>
+    </div>
+    <div class="stat">
+      <div class="label">هر کلیک</div>
+      <div class="value" id="perClick">+1</div>
+    </div>
+    <div class="stat">
+      <div class="label">در ثانیه</div>
+      <div class="value" id="perSec">+0</div>
+    </div>
+  </div>
+
+  <div class="coin-wrap">
+    <div class="coin" id="coin">+</div>
+    <div class="floaters" id="floaters"></div>
+  </div>
+
+  <div class="panel">
+    <h2>ارتقاها</h2>
+    <div id="upgrades"></div>
+  </div>
+
+  <button class="reset-btn" id="resetBtn">شروع دوباره</button>
+  <div class="footer-note">پیشرفتت فقط روی همین مرورگر ذخیره می‌مونه</div>
+
+<script>
+(function(){
+  const STORAGE_KEY = 'coin_clicker_save_v1';
+
+  const upgradeDefs = [
+    { id:'click1', name:'دست قوی‌تر', desc:'هر کلیک +1 سکه بیشتر', baseCost:20, type:'click', amount:1 },
+    { id:'auto1',  name:'ربات جمع‌کن', desc:'هر ثانیه +1 سکه خودکار', baseCost:50, type:'auto', amount:1 },
+    { id:'click2', name:'دستکش طلایی', desc:'هر کلیک +5 سکه بیشتر', baseCost:300, type:'click', amount:5 },
+    { id:'auto2',  name:'کارگر دوم', desc:'هر ثانیه +5 سکه خودکار', baseCost:600, type:'auto', amount:5 },
+  ];
+
+  let state = {
+    balance: 0,
+    perClick: 1,
+    perSec: 0,
+    owned: {}
+  };
+
+  function load(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(raw){
+        const parsed = JSON.parse(raw);
+        state = Object.assign(state, parsed);
+      }
+    }catch(e){ console.warn('load failed', e); }
+  }
+  function save(){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+    catch(e){ console.warn('save failed', e); }
+  }
+
+  function costFor(def){
+    const owned = state.owned[def.id] || 0;
+    return Math.round(def.baseCost * Math.pow(1.5, owned));
+  }
+
+  function fmt(n){
+    return Math.floor(n).toLocaleString('fa-IR');
+  }
+
+  function render(){
+    document.getElementById('balance').textContent = fmt(state.balance);
+    document.getElementById('perClick').textContent = '+' + fmt(state.perClick);
+    document.getElementById('perSec').textContent = '+' + fmt(state.perSec);
+
+    const wrap = document.getElementById('upgrades');
+    wrap.innerHTML = '';
+    upgradeDefs.forEach(def=>{
+      const cost = costFor(def);
+      const owned = state.owned[def.id] || 0;
+      const afford = state.balance >= cost;
+      const row = document.createElement('div');
+      row.className = 'upgrade';
+      row.innerHTML = `
+        <div class="upg-info">
+          <div class="name">${def.name} ${owned?('× '+owned):''}</div>
+          <div class="desc">${def.desc} — قیمت بعدی: ${fmt(cost)}</div>
+        </div>
+        <button class="buy-btn ${afford?'afford':''}" ${afford?'':'disabled'} data-id="${def.id}">خرید</button>
+      `;
+      wrap.appendChild(row);
+    });
+
+    wrap.querySelectorAll('.buy-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=> buy(btn.getAttribute('data-id')));
+    });
+  }
+
+  function buy(id){
+    const def = upgradeDefs.find(d=>d.id===id);
+    if(!def) return;
+    const cost = costFor(def);
+    if(state.balance < cost) return;
+    state.balance -= cost;
+    state.owned[id] = (state.owned[id]||0) + 1;
+    if(def.type==='click') state.perClick += def.amount;
+    if(def.type==='auto') state.perSec += def.amount;
+    save();
+    render();
+  }
+
+  function spawnFloater(x, y, amount){
+    const el = document.createElement('div');
+    el.className = 'floater';
+    el.textContent = '+' + fmt(amount);
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+    document.getElementById('floaters').appendChild(el);
+    setTimeout(()=> el.remove(), 900);
+  }
+
+  const coin = document.getElementById('coin');
+  coin.addEventListener('click', (e)=>{
+    state.balance += state.perClick;
+    const rect = coin.getBoundingClientRect();
+    const x = e.clientX - rect.left + 10;
+    const y = e.clientY - rect.top;
+    spawnFloater(x, y, state.perClick);
+    save();
+    render();
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', ()=>{
+    if(!confirm('مطمئنی می‌خوای از اول شروع کنی؟')) return;
+    state = { balance:0, perClick:1, perSec:0, owned:{} };
+    save();
+    render();
+  });
+
+  setInterval(()=>{
+    if(state.perSec > 0){
+      state.balance += state.perSec;
+      save();
+      render();
+    }
+  }, 1000);
+
+  load();
+  render();
+})();
+</script>
+</body>
+</html>
